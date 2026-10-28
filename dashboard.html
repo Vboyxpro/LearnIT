@@ -44,8 +44,10 @@
     <script>
         // 1. Supabase adatok (Ugyanaz, mint az auth.js-ben!)
         const SUPABASE_URL = "https://ozqgcyzyypehqjqxoole.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_33Mx64Pcghvu58Of9L78FQ_x96oStp1";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY = "sb_publishable_33Mx64Pcghvu58Of9L78FQ_x96oStp1";
+// Átírva supabaseClient-re, hogy ne legyen névütközés
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
         let userPremiumStatus = false;
         const userId = localStorage.getItem('supabase_user_id');
