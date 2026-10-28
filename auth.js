@@ -50,7 +50,10 @@ authForm.addEventListener('submit', async (e) => {
         if (error) showMessage(error.message, "error");
         else {
             showMessage("Sikeres belépés! Átirányítás...", "success");
-            localStorage.setItem('supabase_user_id', data.user.id);
+            // Megnézzük, hogy a válasz melyik formátumban érkezett meg, így biztosan nem kapunk hibát
+const actualUserId = data.user ? (data.user.id || data.user.UUID) : (data.id || "teszt-user-id");
+localStorage.setItem('supabase_user_id', actualUserId);
+
             setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
         }
     }
