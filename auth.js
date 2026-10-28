@@ -1,10 +1,9 @@
-
 // 1. Supabase inicializálása - JAVÍTOTT verzió
 const SUPABASE_URL = "https://ozqgcyzyypehqjqxoole.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_33Mx64Pcghvu58Of9L78FQ_x96oStp1";
 
-// FONTOS: A kis "s" és nagy "S" betűk különbsége oldja meg a hibát!
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Cdnjs használata esetén a globális ablak objektumból indítjuk el a klienst
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 
 // 2. DOM elemek kijelölése
@@ -44,11 +43,13 @@ authForm.addEventListener('submit', async (e) => {
     const password = passwordInput.value;
 
     if (isSignUpMode) {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        // ÁTÍRVA: supabaseClient.auth a korábbi sima supabase helyett
+        const { data, error } = await supabaseClient.auth.signUp({ email, password });
         if (error) showMessage(error.message, "error");
         else showMessage("Sikeres regisztráció! Ellenőrizd az e-mailedet.", "success");
     } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        // ÁTÍRVA: supabaseClient.auth a korábbi sima supabase helyett
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) showMessage(error.message, "error");
         else {
             showMessage("Sikeres belépés! Átirányítás...", "success");
