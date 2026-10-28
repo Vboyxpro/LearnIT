@@ -1,10 +1,9 @@
-// 1. Supabase inicializálása - JAVÍTOTT verzió
+// 1. Supabase inicializálása a te adataiddal
 const SUPABASE_URL = "https://ozqgcyzyypehqjqxoole.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_33Mx64Pcghvu58Of9L78FQ_x96oStp1";
 
-// Cdnjs használata esetén a globális ablak objektumból indítjuk el a klienst
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+// A helyi fájl miatt ez a sor most már hibátlanul le fog futni!
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // 2. DOM elemek kijelölése
 const authForm = document.getElementById('auth-form');
@@ -43,18 +42,15 @@ authForm.addEventListener('submit', async (e) => {
     const password = passwordInput.value;
 
     if (isSignUpMode) {
-        // ÁTÍRVA: supabaseClient.auth a korábbi sima supabase helyett
         const { data, error } = await supabaseClient.auth.signUp({ email, password });
         if (error) showMessage(error.message, "error");
         else showMessage("Sikeres regisztráció! Ellenőrizd az e-mailedet.", "success");
     } else {
-        // ÁTÍRVA: supabaseClient.auth a korábbi sima supabase helyett
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) showMessage(error.message, "error");
         else {
             showMessage("Sikeres belépés! Átirányítás...", "success");
             localStorage.setItem('supabase_user_id', data.user.id);
-            // Sikeres belépés után átirányítjuk a főmenüre
             setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
         }
     }
