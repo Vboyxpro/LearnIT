@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyelvtanuló App - Főmenü</title>
+    <script src="https://jsdelivr.net"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Plusz dizájn elemek kifejezetten a főmenühöz */
+        .dashboard-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .category-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 2px solid #e5e5e5; cursor: pointer; transition: transform 0.2s; position: relative; }
+        .category-card:hover { transform: translateY(-5px); }
+        .premium-badge { background: #ffc107; color: #000; font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 20px; position: absolute; top: 10px; right: 10px; }
+        .locked { filter: grayscale(1); opacity: 0.7; }
+        .lock-icon { font-size: 24px; position: absolute; bottom: 10px; right: 10px; }
+        .logout-btn { background: #ff4b4b; padding: 8px 16px; font-size: 14px; width: auto; }
+        .logout-btn:hover { background: #d63333; }
+        .premium-banner { background: linear-gradient(135deg, #ff9d00, #ffc107); padding: 20px; border-radius: 12px; color: black; margin-bottom: 30px; display: none; justify-content: space-between; align-items: center; font-weight: bold; }
+        .premium-banner button { width: auto; background: black; color: white; padding: 10px 20px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h2>Üdvözlünk a Nyelvtanulóban! 👋</h2>
+            <button id="logout-btn" class="logout-btn">Kijelentkezés</button>
+        </div>
+
+        <!-- Idegesítő reklámcsík helye a nem-prémiumosoknak / Előfizetési felhívás -->
+        <div id="premium-banner" class="premium-banner">
+            <span>Szerezd meg a teljes hozzáférést havi 2499 Ft-ért! 🚀</span>
+            <button id="subscribe-btn">Fizess elő!</button>
+        </div>
+
+        <h3>Válassz egy kategóriát:</h3>
+        <div id="category-grid" class="category-grid">
+            <p>Leckék betöltése...</p>
+        </div>
+    </div>
+
+    <script>
+        // 1. Supabase adatok (Ugyanaz, mint az auth.js-ben!)
+        const SUPABASE_URL = "https://ozqgcyzyypehqjqxoole.supabase.co";
+        const SUPABASE_ANON_KEY = "ide-másold-be-azt-a-hosszú-sb_publishable-kulcsot";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let userPremiumStatus = false;
+        const userId = localStorage.getItem('supabase_user_id');
+
+        // Biztonsági ellenőrzés: ha nincs belépve, visszadobjuk az index.html-re
+        if (!userId) {
+            window.location.href = "index.html";
+        }
+
+        async function initDashboard() {
+            await checkPremiumStatus();
+            await loadCategories();
+        }
+
+        // 2. Felhasználó prémium státuszának ellenőrzése a 'profiles' táblából
+        async function checkPremiumStatus() {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('is_premium')
+                .eq('id', userId)
+                .single();
+
+            if (data && data.is_premium) {
+                userPremiumStatus = true;
+                document.getElementById('premium-banner').style.display = 'none';
+            } else {
+                userPremiumStatus = false;
+                document.getElementById('premium-banner').style.display = 'flex';
+            }
+        }
+
+        // 3. Kategóriák betöltése a Supabase 'categories' táblából
+        async function loadCategories() {
+            const grid = document.getElementById('category-grid');
+            grid.innerHTML = ""; // Alapértelmezett szöveg törlése
+
+            const { data: categories, error } = await supabase
+                .from('categories')
+                .select('*')
+                .order('id', { ascending: true });
+
+            if (error) {
+                grid.innerHTML = "<p>Hiba történt a leckék betöltésekor.</p>";
+                console.error(error);
+                return;
+            }
+
+            categories.forEach(cat => {
+                const card = document.createElement('div');
+                card.className = "category-card";
+                
+                // Megnézzük, hogy a kategória prémium-e, és a felhasználónak van-e rá joga
+                const isLocked = cat.is_premium && !userPremiumStatus;
+                
+                if (isLocked) {
+                    card.classList.add('locked');
+                }
+
+                card.innerHTML = `
+                    <h4>${cat.title}</h4>
+                    ${cat.is_premium ? '<span class="premium-badge">PREMIUM</span>' : ''}
+                    ${isLocked ? '<span class="lock-icon">🔒</span>' : ''}
+                `;
+
+                // Kattintás kezelése
+                card.addEventListener('click', () => {
+                    if (isLocked) {
+                        alert("Ez egy prémium kategória! Az eléréshez fizess elő a fenti gombbal.");
+                    } else {
+                        // Elmentjük, melyik kategóriát választotta, és átvisszük a játékhoz
+                        localStorage.setItem('current_category_id', cat.id);
+                        window.location.href = "game.html";
+                    }
+                });
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Kijelentkezés gomb logikája
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            localStorage.clear();
+            window.location.href = "index.html";
+        });
+
+        // Stripe előfizetés gomb (Ide jön majd a te 2499 Ft-os Stripe Payment Link-ed!)
+        document.getElementById('subscribe-btn').addEventListener('click', () => {
+            const stripeUrl = `https://stripe.com{userId}`;
+            window.open(stripeUrl, '_blank');
+        });
+
+        // Dashboard indítása betöltéskor
+        initDashboard();
+    </script>
+</body>
+</html>
