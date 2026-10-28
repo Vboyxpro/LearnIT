@@ -1,8 +1,11 @@
-// 1. Supabase inicializálása - Írd be a saját kulcsaidat a macskakörmök közé!
-const SUPABASE_URL = "https://ozqgcyzyypehqjqxoole.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_33Mx64Pcghvu58Of9L78FQ_x96oStp1"; // A hosszú anon kulcsod
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// 1. Supabase inicializálása - JAVÍTOTT verzió
+const SUPABASE_URL = "https://ozqgcyzyypehqjqxoole.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_33Mx64Pcghvu58Of9L78FQ_x96oStp1";
+
+// FONTOS: A kis "s" és nagy "S" betűk különbsége oldja meg a hibát!
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 // 2. DOM elemek kijelölése
 const authForm = document.getElementById('auth-form');
