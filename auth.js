@@ -1,6 +1,6 @@
 // 1. Supabase inicializálása - Írd be a saját kulcsaidat a macskakörmök közé!
-const SUPABASE_URL = "https://supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // A hosszú anon kulcsod
+const SUPABASE_URL = "https://ozqgcyzyypehqjqxoole.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_33Mx64Pcghvu58Of9L78FQ_x96oStp1"; // A hosszú anon kulcsod
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
