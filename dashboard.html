@@ -66,16 +66,21 @@
             .select('is_premium')
             .eq('user_id', userId);
 
-        // Kiemeljük a lista legelső elemét, ha tömböt kaptunk vissza
-        let profile = null;
+        console.log("Nyers Supabase adat:", data); // Ezzel látni fogjuk a konzolban a pontos formátumot!
+
+        let isPremium = false;
+
+        // Ha a válasz egy tömb (lista), megnézzük az első elemét
         if (Array.isArray(data) && data.length > 0) {
-            profile = data[0];
-        } else if (data && !Array.isArray(data)) {
-            profile = data;
+            const row = data[0];
+            isPremium = row.is_premium === true || row.is_premium === "true" || row.is_premium === 1;
+        } 
+        // Ha közvetlenül egy objektum érkezett vissza
+        else if (data && !Array.isArray(data)) {
+            isPremium = data.is_premium === true || data.is_premium === "true" || data.is_premium === 1;
         }
 
-        // Most már pontosan a belső objektum mezőjét nézzük
-        if (profile && (profile.is_premium === true || profile.is_premium === "true" || profile.is_premium === 1)) {
+        if (isPremium) {
             userPremiumStatus = true;
             document.getElementById('premium-banner').style.display = 'none';
             console.log("Sikeresen beolvasva: Prémium felhasználó! 🎉");
@@ -90,6 +95,7 @@
         document.getElementById('premium-banner').style.display = 'flex';
     }
 }
+
 
 
 
