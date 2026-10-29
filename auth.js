@@ -34,6 +34,7 @@ document.addEventListener('click', function(e) {
 });
 
 // 4. Form elküldése
+// 4. Form elküldése - JAVÍTOTT, BIZTONSÁGOS VERZIÓ
 authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     showMessage("Folyamatban...", "");
@@ -42,22 +43,41 @@ authForm.addEventListener('submit', async (e) => {
     const password = passwordInput.value;
 
     if (isSignUpMode) {
+        // REGISZTRÁCIÓ
         const { data, error } = await supabaseClient.auth.signUp({ email, password });
-        if (error) showMessage(error.message, "error");
-        else showMessage("Sikeres regisztráció! Ellenőrizd az e-mailedet.", "success");
+        if (error || (data && data.error)) {
+            const errorMsg = error ? error.message : data.error.message;
+            showMessage(errorMsg, "error");
+        } else {
+            showMessage("Sikeres regisztráció! Ellenőrizd az e-mailedet.", "success");
+        }
     } else {
+        // BELÉPÉS
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) showMessage(error.message, "error");
-        else {
-            showMessage("Sikeres belépés! Átirányítás...", "success");
-            // Megnézzük, hogy a válasz melyik formátumban érkezett meg, így biztosan nem kapunk hibát
-const actualUserId = data.user ? (data.user.id || data.user.UUID) : (data.id || "teszt-user-id");
-localStorage.setItem('supabase_user_id', actualUserId);
+        
+        // Szigorú ellenőrzés: ha hiba van a válaszban, MEGÁLLUNK!
+        if (error || (data && data.error)) {
+            const errorMsg = error ? error.message : (data.error.message || "Hibás e-mail vagy jelszó!");
+            showMessage(errorMsg, "error");
+            console.error("Belépési hiba:", errorMsg);
+            return; // Megállítjuk a kódot, nem engedjük tovább a dashboardra!
+        }
 
+        // Ha idáig eljut a kód, a belépés 100%, hogy SIKERES volt
+        showMessage("Sikeres belépés! Átirányítás...", "success");
+        
+        // Biztonságosan kinyerjük a valódi User ID-t
+        const actualUserId = data.user ? data.user.id : (data.id || null);
+        
+        if (actualUserId) {
+            localStorage.setItem('supabase_user_id', actualUserId);
             setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
+        } else {
+            showMessage("Adatbázis hiba: Nem található felhasználói azonosító.", "error");
         }
     }
 });
+
 
 function showMessage(text, type) {
     messageBox.innerText = text;
