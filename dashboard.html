@@ -59,27 +59,37 @@
         }
 
         // 2. Prémium ellenőrzés javított változókkal
-        async function checkPremiumStatus() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('profiles')
-                    .select('is_premium')
-                    .eq('user_id', userId)
-                    .single();
+       async function checkPremiumStatus() {
+    try {
+        // Lekérjük a profilt a frissített 'user_id' oszlop alapján
+        const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('is_premium')
+            .eq('user_id', userId);
 
-                if (data && (data.is_premium === true || data.is_premium === "true")) {
-                    userPremiumStatus = true;
-                    document.getElementById('premium-banner').style.display = 'none';
-                } else {
-                    userPremiumStatus = false;
-                    document.getElementById('premium-banner').style.display = 'flex';
-                }
-            } catch (e) {
-                console.log("Nem-prémium státusz beállítva alapértelmezettként");
-                userPremiumStatus = false;
-                document.getElementById('premium-banner').style.display = 'flex';
-            }
+        // A mini supabase.js listát ad vissza, így az első elemet [0] nézzük meg
+        let profile = data;
+        if (Array.isArray(data)) {
+            profile = data[0];
         }
+
+        // Ellenőrizzük, hogy a válaszban a mező true-e
+        if (profile && (profile.is_premium === true || profile.is_premium === "true" || profile.is_premium === 1)) {
+            userPremiumStatus = true;
+            document.getElementById('premium-banner').style.display = 'none';
+            console.log("Sikeresen beolvasva: Prémium felhasználó! 🎉");
+        } else {
+            userPremiumStatus = false;
+            document.getElementById('premium-banner').style.display = 'flex';
+            console.log("Sikeresen beolvasva: Ingyenes felhasználó.");
+        }
+    } catch (e) {
+        console.error("Hiba történt a státusz ellenőrzésekor:", e);
+        userPremiumStatus = false;
+        document.getElementById('premium-banner').style.display = 'flex';
+    }
+}
+
 
         // 3. Kategóriák betöltése javított változókkal
         async function loadCategories() {
