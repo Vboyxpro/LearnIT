@@ -59,21 +59,22 @@
         }
 
         // 2. Prémium ellenőrzés javított változókkal
-       async function checkPremiumStatus() {
+      async function checkPremiumStatus() {
     try {
-        // Lekérjük a profilt a frissített 'user_id' oszlop alapján
         const { data, error } = await supabaseClient
             .from('profiles')
             .select('is_premium')
             .eq('user_id', userId);
 
-        // A mini supabase.js listát ad vissza, így az első elemet [0] nézzük meg
-        let profile = data;
-        if (Array.isArray(data)) {
+        // Kiemeljük a lista legelső elemét, ha tömböt kaptunk vissza
+        let profile = null;
+        if (Array.isArray(data) && data.length > 0) {
             profile = data[0];
+        } else if (data && !Array.isArray(data)) {
+            profile = data;
         }
 
-        // Ellenőrizzük, hogy a válaszban a mező true-e
+        // Most már pontosan a belső objektum mezőjét nézzük
         if (profile && (profile.is_premium === true || profile.is_premium === "true" || profile.is_premium === 1)) {
             userPremiumStatus = true;
             document.getElementById('premium-banner').style.display = 'none';
@@ -89,6 +90,7 @@
         document.getElementById('premium-banner').style.display = 'flex';
     }
 }
+
 
 
         // 3. Kategóriák betöltése javított változókkal
